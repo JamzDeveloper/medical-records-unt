@@ -1,10 +1,15 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Consultation } from '../entities/consultation.entity';
 import { ConsultationCreateDto } from '../dtos/consultation.dto';
 import { Doctor } from '../../doctor/entities/doctor.entity';
 import { MedicalHistory } from '../../medical-history/entity/medical-history.entity';
+import { User } from 'src/modules/users/entities/user.entity';
 
 @Injectable()
 export class ConsultationService {
@@ -41,7 +46,7 @@ export class ConsultationService {
   }
 
   async oneConsultation(consultationId: number) {
-    return await this.consultationRepository.findOne({
+    const result = await this.consultationRepository.findOne({
       where: { id: consultationId },
       relations: {
         doctor: {
@@ -49,6 +54,10 @@ export class ConsultationService {
         },
       },
     });
+    if(!result){
+      throw new BadRequestException(`Consultation with id:${consultationId} not found`);
+    }
+    return result
   }
 
   async updateConsultation(
@@ -61,7 +70,7 @@ export class ConsultationService {
     if (!foundConsultation) {
       throw new BadRequestException(`Consultation with id:${id} not found`);
     }
-    
+
     await this.consultationRepository.update(id, {
       ...dataConsultation,
     });
@@ -69,5 +78,35 @@ export class ConsultationService {
       ...foundConsultation,
       ...dataConsultation,
     };
+  }
+
+  async deleteConsultation(user: User, consultationId: number) {
+    const foundConsultation = await this.consultationRepository.findOne({
+      relations: {
+        doctor: true,
+      },
+      where: { id: consultationId },
+    });
+
+    if (!foundConsultation) {
+      throw new BadRequestException(
+        `Consultation with id:${consultationId} not found`,
+      );
+    }
+    console.log(user);
+    const foundDoctor = await this.doctorRepository.findOne({
+      where: {
+        user: {
+          id: user.id,
+        },
+      },
+    });
+    console.log(foundDoctor);
+
+    if (foundDoctor.id != foundConsultation.doctor.id) {
+      throw new UnauthorizedException();
+    }
+    const result = await this.consultationRepository.delete(consultationId);
+    return result ? true : false;
   }
 }
