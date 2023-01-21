@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { Doctor } from '../entities/doctor.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -17,9 +17,29 @@ export class DoctorService {
   async createDoctor(doctor: DoctorCreateDto) {
     const { user } = doctor;
     user.role = TYPEUSER.DOCTOR;
-    const result = await this.userServices.createUser(user)
+    const result = await this.userServices.createUser(user);
     return await this.doctorRepository.save({
       user: result,
     });
+  }
+  async allDoctors() {
+    return await this.doctorRepository.find({
+      relations: {
+        user: true,
+      },
+    });
+  }
+
+  async oneDoctor(doctorId: number) {
+    const foundDoctor = await this.doctorRepository.findOne({
+      relations:{
+        user:true
+      },
+      where: { id: doctorId },
+    });
+    if (!foundDoctor) {
+      throw new BadRequestException(`Doctro with id:${doctorId} not found`);
+    }
+    return foundDoctor;
   }
 }

@@ -32,4 +32,15 @@ export class PatientService {
       medicalHistory: newMedicalHistory,
     });
   }
+  async allPatient() {
+    return await this.patientRepository.find({
+      relations: {
+        user: true,
+      },
+    });
+  }
+
+  async onePatient(patientId: number) {
+    return await this.patientRepository.findOneBy({ id: patientId });
+  }
 }
