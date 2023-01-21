@@ -39,4 +39,35 @@ export class ConsultationService {
       medicalHistory: foundMedicalHistory,
     });
   }
+
+  async oneConsultation(consultationId: number) {
+    return await this.consultationRepository.findOne({
+      where: { id: consultationId },
+      relations: {
+        doctor: {
+          user: true,
+        },
+      },
+    });
+  }
+
+  async updateConsultation(
+    dataConsultation: ConsultationCreateDto,
+    id: number,
+  ) {
+    const foundConsultation = await this.consultationRepository.findOneBy({
+      id,
+    });
+    if (!foundConsultation) {
+      throw new BadRequestException(`Consultation with id:${id} not found`);
+    }
+    
+    await this.consultationRepository.update(id, {
+      ...dataConsultation,
+    });
+    return {
+      ...foundConsultation,
+      ...dataConsultation,
+    };
+  }
 }

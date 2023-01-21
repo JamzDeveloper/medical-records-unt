@@ -1,7 +1,5 @@
 import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
 import { MedicalHistoryService } from '../services/medical-history.service';
-import { RoleProtected } from '../../../auth/decorator/role-protected.decorator';
-import { ValidRoles } from 'src/auth/interfaces/valid-roles';
 
 @Controller('medical-history')
 export class MedicalHistoryController {

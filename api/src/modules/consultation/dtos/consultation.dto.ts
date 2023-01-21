@@ -1,4 +1,4 @@
-import { IsInt, IsString } from 'class-validator';
+import { IsInt, IsOptional, IsString } from 'class-validator';
 
 export class ConsultationCreateDto {
   @IsInt()
@@ -7,6 +7,20 @@ export class ConsultationCreateDto {
   @IsInt()
   doctorId: number;
 
+  @IsString()
+  description: string;
+}
+
+export class ConsultationUpdateDto {
+  @IsOptional()
+  @IsInt()
+  medicalHistoryId: number;
+
+  @IsOptional()
+  @IsInt()
+  doctorId: number;
+
+  @IsOptional()
   @IsString()
   description: string;
 }
